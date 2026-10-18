@@ -20,6 +20,9 @@ if ! command -v opencode >/dev/null 2>&1; then
   exit 1
 fi
 
+# Botkeep writes panel Environment variables to .env rather than the process env
+if [ -f .env ]; then set -a; . ./.env; set +a; fi
+
 # 3. Fail fast with a clear message if the Telegram token is missing
 if [ -z "${TELEGRAM_BOT_TOKEN:-}" ]; then
   echo "[start] FATAL: TELEGRAM_BOT_TOKEN is not set."
