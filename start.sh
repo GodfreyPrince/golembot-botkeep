@@ -20,6 +20,11 @@ if ! command -v opencode >/dev/null 2>&1; then
   exit 1
 fi
 
+# Keep the 2 GB disk lean: drop npm cache, OpenCode undo snapshots, unused platform binaries
+rm -rf "$HOME/.npm/_cacache" "$HOME/.npm/_logs" .local/share/opencode/snapshot .cache/opencode/tmp temp_file/* 2>/dev/null || true
+for d in node_modules/opencode-darwin-* node_modules/opencode-windows-* node_modules/opencode-linux-arm64* node_modules/opencode-linux-x64-musl node_modules/opencode-linux-x64-baseline-musl; do rm -rf "$d"; done
+find .local/share/opencode/log -name '*.log' -mtime +3 -delete 2>/dev/null || true
+
 # Botkeep writes panel Environment variables to .env rather than the process env
 if [ -f .env ]; then set -a; . ./.env; set +a; fi
 
