@@ -2,7 +2,7 @@
 # they come from the Botkeep panel (Environment), referenced as ${...}.
 name: golembot
 engine: opencode
-model: opencode/muse-spark-1.3-contributor-free
+model: opencode/deepseek-v4.1-flash-free   # DeepSeek V4.1 Flash, free on OpenCode Zen (limited-time free period)
 channels:
   telegram:
     botToken: ${TELEGRAM_BOT_TOKEN}   # from @BotFather on Telegram
