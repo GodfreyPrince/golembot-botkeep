@@ -9,19 +9,20 @@ if [ ! -d node_modules/golembot ]; then
   npm install --no-audit --no-fund
 fi
 
-# 2. OpenCode binary on PATH — GolemBot shells out to `opencode`
-export PATH="$HOME/.opencode/bin:$PATH"
+# 2. opencode CLI comes from the `opencode-ai` npm package — GolemBot shells out to it
+export PATH="$PWD/node_modules/.bin:$PATH"
 if ! command -v opencode >/dev/null 2>&1; then
-  echo "[start] installing opencode…"
-  curl -fsSL https://opencode.ai/install | bash
-fi
-
-# 3. Fail fast with a clear message if Slack tokens are missing
-if [ -z "${SLACK_BOT_TOKEN:-}" ] || [ -z "${SLACK_APP_TOKEN:-}" ]; then
-  echo "[start] FATAL: SLACK_BOT_TOKEN / SLACK_APP_TOKEN are not set."
-  echo "[start] Add them in the Botkeep panel under Environment, then restart this workload."
+  echo "[start] FATAL: opencode binary missing after npm install."
   exit 1
 fi
 
-echo "[start] launching golembot gateway…"
+# 3. Fail fast with a clear message if the Telegram token is missing
+if [ -z "${TELEGRAM_BOT_TOKEN:-}" ]; then
+  echo "[start] FATAL: TELEGRAM_BOT_TOKEN is not set."
+  echo "[start] Create a bot with @BotFather on Telegram, add TELEGRAM_BOT_TOKEN"
+  echo "[start] in the Botkeep panel under Environment, then restart this workload."
+  exit 1
+fi
+
+echo "[start] launching golembot gateway (telegram)…"
 exec ./node_modules/.bin/golembot gateway
