@@ -3,6 +3,10 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# Persist boot output (Botkeep log buffer resets on restart)
+exec > >(tee -a boot.log) 2>&1
+echo "[start] boot $(date -u +%FT%TZ) node $(node -v)"
+
 # 1. Dependencies (Botkeep usually runs `npm install` on deploy; no-op if done)
 if [ ! -d node_modules/golembot ]; then
   echo "[start] installing dependencies…"
