@@ -3,6 +3,11 @@
 name: golembot
 engine: opencode
 model: opencode/deepseek-v4.1-flash-free   # DeepSeek V4.1 Flash, free on OpenCode Zen (limited-time free period)
+# Limits: one OpenCode run at a time, short queue, 10-min cap per message
+timeout: 600
+maxConcurrent: 1
+maxQueuePerSession: 3
+sessionTtlDays: 30
 channels:
   telegram:
     botToken: ${TELEGRAM_BOT_TOKEN}   # from @BotFather on Telegram

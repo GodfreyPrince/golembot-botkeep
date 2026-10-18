@@ -36,5 +36,28 @@ if [ -z "${TELEGRAM_BOT_TOKEN:-}" ]; then
   exit 1
 fi
 
+# Force OpenCode undo snapshots off (they copy the whole workspace incl. node_modules)
+node -e 'const f="opencode.json";const fs=require("fs");let c={};try{c=JSON.parse(fs.readFileSync(f,"utf8"))}catch{};if(c.snapshot!==false){c.snapshot=false;fs.writeFileSync(f,JSON.stringify(c,null,2)+"\n")}'
+
+# Janitor: in-container "cron" every 30 min (no cron daemon on Botkeep)
+janitor() {
+  while sleep 1800; do
+    rm -rf "$HOME/.npm/_cacache" "$HOME/.npm/_logs" .local/share/opencode/snapshot .cache/opencode/tmp temp_file/* 2>/dev/null
+    find .local/share/opencode/log -name '*.log' -mtime +2 -delete 2>/dev/null
+    find .golem/history -name '*.jsonl' -size +5M -exec sh -c 'tail -n 500 "$1" > "$1.tmp" && mv "$1.tmp" "$1"' _ {} \; 2>/dev/null
+    [ -f boot.log ] && [ "$(wc -c < boot.log)" -gt 1000000 ] && tail -n 2000 boot.log > boot.log.tmp && mv boot.log.tmp boot.log
+    used=$(du -sm . 2>/dev/null | cut -f1)
+    echo "[janitor] $(date -u +%FT%TZ) disk ${used}MB"
+    if [ "${used:-0}" -gt 1700 ]; then
+      echo "[janitor] over 1700MB, purging OpenCode logs and caches"
+      rm -rf .local/share/opencode/log/* .cache/opencode/* 2>/dev/null
+    fi
+  done
+}
+janitor &
+
+# Cap the gateway's Node heap so it can't starve OpenCode
+export NODE_OPTIONS="--max-old-space-size=512"
+
 echo "[start] launching golembot gateway (telegram)…"
 exec ./node_modules/.bin/golembot gateway
